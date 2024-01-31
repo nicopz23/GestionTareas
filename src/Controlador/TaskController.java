@@ -7,6 +7,7 @@ import bbdd.Conexion;
 import java.sql.*;
 import java.text.DateFormat;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -53,8 +54,11 @@ public class TaskController {
     public List<Admin> verUsuarios(){
         return Admin.getuser();
     }
+    public List<Task> verTareas(){
+        return Task.gettask();
+    }
 
-    public boolean nuevaTarea(String titulo, String descripcion, LocalDate datetime, LocalDate deadline, boolean status, int iduser) {
+    public boolean nuevaTarea(String titulo, String descripcion, LocalDateTime datetime, LocalDateTime deadline, boolean status, int iduser) {
         Task task = new Task();
         if (task.insertar("(title,description,datetime,deadline,status,iduser) values(?,?,?,?,?,?)", titulo, descripcion, datetime, deadline, status, iduser)) {
             return taskList.add(task);
@@ -93,13 +97,13 @@ public class TaskController {
         }
     }
 
-    public List<Admin> adminOusuario(String username, String password) {
+    public List<Admin> adminOusuario(String username) {
         Connection conn = Conexion.conetar();
-        String sql = "Select * from user where username = ? and password = ?";
+        String sql = "Select * from user where username = ?";
         try {
+            listnew = new ArrayList<>();
             PreparedStatement stm = conn.prepareStatement(sql);
             stm.setString(1, username);
-            stm.setString(2, password);
             ResultSet respuesta = stm.executeQuery(sql);
             while (respuesta.next()) {
                 Admin admin = new Admin();

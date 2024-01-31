@@ -2,9 +2,10 @@ package Vista;
 
 import Controlador.LoginController;
 import Controlador.TaskController;
-import Modelos.Admin;
+import Modelos.Task;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 public class Main {
@@ -12,7 +13,10 @@ public class Main {
         if (LoginController.login("nicolas","1524")){
             System.out.println("Se conecto");
             TaskController taskController = new TaskController();
-            System.out.println(taskController.adminOusuario("nicolas","1524"));
+            Task task = new Task();
+            System.out.println(taskController.verTareas());
+            //System.out.println(task.setformatDate(String.valueOf(LocalDateTime.now())));
+
         }else{
             System.out.println("no se pudo conectar");
         }

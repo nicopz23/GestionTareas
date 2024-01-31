@@ -2,12 +2,9 @@ package Modelos;
 
 import bbdd.Conexion;
 
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.time.LocalDate;
+import java.sql.*;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -78,6 +75,7 @@ public class Task extends ModeloBase{
     public void setStatus(boolean status) {
         this.status = status;
     }
+
     public static List<Task> gettask() {
         List<Task> taskList = new ArrayList<>();
         Connection conn = Conexion.conetar();
@@ -90,8 +88,8 @@ public class Task extends ModeloBase{
                 task.setIdtask(respuesta.getInt("idtask"));
                 task.setTitle(respuesta.getString("title"));
                 task.setDescription(respuesta.getString("description"));
-//                task.setDatetime(respuesta.("datetime"));
-//                task.setDeadline(respuesta.("deadline"));
+                task.setformatDate(respuesta.getString("datetime"));
+                task.setformatDeadline(respuesta.getString("deadline"));
                 task.setStatus(respuesta.getBoolean("status"));
                 taskList.add(task);
             }
@@ -103,6 +101,15 @@ public class Task extends ModeloBase{
         } catch (SQLException e) {
         }
         return taskList;
+    }
+
+    public String setformatDate(String datetime) {
+        datetime =this.datetime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+        return datetime;
+    }
+    public String setformatDeadline(String deadline) {
+        deadline =this.deadline.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+        return deadline;
     }
 
     @Override
