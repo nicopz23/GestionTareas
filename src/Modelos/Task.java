@@ -6,34 +6,36 @@ import java.sql.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 public class Task extends ModeloBase{
     private int idtask;
+    private Admin iduser;
     private String title;
     private String description;
-    private LocalDateTime datetime;
-    private LocalDateTime deadline;
+    private Date datetime;
+    private Date deadline;
     private boolean status;
-
-    public Task(String title, String description, LocalDateTime deadline) {
-        this.idtask = idtask++;
-        this.title = title;
-        this.description = description;
-        this.deadline = deadline;
-        this.status = true;
-    }
 
     public Task() {
 
     }
 
-    public LocalDateTime getDatetime() {
+    public Date getDatetime() {
         return datetime;
     }
 
-    public void setDatetime(LocalDateTime datetime) {
+    public void setDatetime(Date datetime) {
         this.datetime = datetime;
+    }
+
+    public Admin getIduser() {
+        return iduser;
+    }
+
+    public void setIduser(Admin iduser) {
+        this.iduser = iduser;
     }
 
     public int getIdtask() {
@@ -60,11 +62,11 @@ public class Task extends ModeloBase{
         this.description = description;
     }
 
-    public LocalDateTime getDeadline() {
+    public Date getDeadline() {
         return deadline;
     }
 
-    public void setDeadline(LocalDateTime deadline) {
+    public void setDeadline(Date deadline) {
         this.deadline = deadline;
     }
 
@@ -75,47 +77,51 @@ public class Task extends ModeloBase{
     public void setStatus(boolean status) {
         this.status = status;
     }
+    public static List<Task> getallTasks() {
+        return null;
+    }
 
-    public static List<Task> gettask() {
-        List<Task> taskList = new ArrayList<>();
-        Connection conn = Conexion.conetar();
-        String sql = "Select * from task";
-        try {
-            Statement stm = conn.createStatement();
-            ResultSet respuesta = stm.executeQuery(sql);
-            while (respuesta.next()) {
-                Task task = new Task();
-                task.setIdtask(respuesta.getInt("idtask"));
-                task.setTitle(respuesta.getString("title"));
-                task.setDescription(respuesta.getString("description"));
-                task.setformatDate(respuesta.getString("datetime"));
-                task.setformatDeadline(respuesta.getString("deadline"));
-                task.setStatus(respuesta.getBoolean("status"));
-                taskList.add(task);
+    public static List<Task> gettaskByUser(int iduser) {
+            List<Task> taskList=new ArrayList<>();
+            Task task=new Task();
+            Admin user=new Admin();
+            Rol rol=new Rol();
+            Connection conn = Conexion.conetar();
+            String sql="SELECT idtask,title,T0.description,datetime,deadline,status,\n" +
+                    "T1.iduser,username,T2.idrol,T2.name \n" +
+                    "from task T0 \n" +
+                    "left join user T1 on T0.iduser=T1.iduser\n" +
+                    "left join rol T2 on T1.idrol=T2.idrol where T1.iduser=?";
+            try {
+                PreparedStatement pst=conn.prepareStatement(sql);
+                pst.setInt(1,iduser);
+                ResultSet resultSet=pst.executeQuery();
+                while (resultSet.next()){
+                    task.idtask=resultSet.getInt("idtask");
+                    task.title=resultSet.getString("title");
+                    task.description=resultSet.getString("description");
+                    task.datetime=resultSet.getDate("datetime");
+                    task.deadline=resultSet.getDate("deadline");
+                    task.status=resultSet.getBoolean("status");
+                    user.setIduser(resultSet.getInt("iduser"));
+                    user.setUsername(resultSet.getString("username"));
+                    rol.setIdrol(resultSet.getInt("idrol"));
+                    rol.setName(resultSet.getString("name"));
+                    user.setIdrol(rol);
+                    task.setIduser(user);
+                    taskList.add(task);
+                }
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
             }
-        } catch (SQLException e) {
             return taskList;
         }
-        try {
-            conn.close();
-        } catch (SQLException e) {
-        }
-        return taskList;
-    }
-
-    public String setformatDate(String datetime) {
-        datetime =this.datetime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
-        return datetime;
-    }
-    public String setformatDeadline(String deadline) {
-        deadline =this.deadline.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
-        return deadline;
-    }
 
     @Override
     public String toString() {
         return "Task{" +
                 "idtask=" + idtask +
+                ", iduser=" + iduser +
                 ", title='" + title + '\'' +
                 ", description='" + description + '\'' +
                 ", datetime=" + datetime +

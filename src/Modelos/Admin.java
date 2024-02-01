@@ -2,10 +2,7 @@ package Modelos;
 
 import bbdd.Conexion;
 
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,13 +10,7 @@ public class Admin extends ModeloBase {
     private int iduser;
     private String username;
     private String password;
-    private int idrol;
-
-    public Admin(String username, String password) {
-        this.iduser = iduser++;
-        this.username = username;
-        this.password = password;
-    }
+    private Rol idrol;
 
     public Admin() {
     }
@@ -48,13 +39,14 @@ public class Admin extends ModeloBase {
         this.password = password;
     }
 
-    public int getIdrol() {
+    public Rol getIdrol() {
         return idrol;
     }
 
-    public void setIdrol(int idrol) {
+    public void setIdrol(Rol idrol) {
         this.idrol = idrol;
     }
+
 
     @Override
     protected String getNombreTabla() {
@@ -73,7 +65,7 @@ public class Admin extends ModeloBase {
                 users.setIduser(respuesta.getInt("iduser"));
                 users.setUsername(respuesta.getString("username"));
                 users.setPassword(respuesta.getString("password"));
-                users.setIdrol(respuesta.getInt("idrol"));
+                users.setIdrol((Rol) respuesta.getObject("idrol"));
                 adminList.add(users);
             }
         } catch (SQLException e) {
@@ -82,9 +74,39 @@ public class Admin extends ModeloBase {
         try {
             conn.close();
         } catch (SQLException e) {
-//            throw new RuntimeException(e);
         }
         return adminList;
+    }
+    public static Admin login(String usuario, String password) {
+        Admin admin = new Admin();
+        Rol rol=new Rol();
+        Connection conn = Conexion.conetar();
+        String sql = "Select u.iduser,u.username,r.idrol,r.name from user as u " +
+                "join rol as r on u.idrol=r.idrol " +
+                "where username = ? and password = ?";
+        try {
+            PreparedStatement pst = conn.prepareStatement(sql);
+            pst.setString(1, usuario);
+            pst.setString(2, password);
+            ResultSet respuesta = pst.executeQuery();
+            if (respuesta.next()) {
+                admin.iduser=respuesta.getInt("iduser");
+                admin.username=respuesta.getString("username");
+                rol.setIdrol(respuesta.getInt("idrol"));
+                rol.setName(respuesta.getString("name"));
+                admin.idrol=rol;
+                return admin;
+            } else {
+                return null;
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        } finally {
+            try {
+                conn.close();
+            } catch (SQLException e) {
+            }
+        }
     }
 
     @Override
